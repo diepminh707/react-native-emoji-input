@@ -395,6 +395,9 @@ class EmojiInput extends React.PureComponent {
     }
 
     handleCategoryPress = key => {
+        this.setState({
+          currentCategoryKey: key,
+        });
         this._recyclerListView.scrollToOffset(
             0,
             category[categoryIndexMap[key].idx].y + 1,
@@ -406,7 +409,6 @@ class EmojiInput extends React.PureComponent {
         let idx = _(category).findLastIndex(c => c.y < offsetY);
         if (idx < 0) idx = 0;
         this.setState({
-            currentCategoryKey: category[idx].key,
             selectedEmoji: null,
             offsetY
         });
@@ -433,7 +435,45 @@ class EmojiInput extends React.PureComponent {
 
     render() {
         const { selectedEmoji, offsetY } = this.state;
-        const { enableSearch, width, renderAheadOffset } = this.props;
+        const { enableSearch, width, renderAheadOffset, isTabHeader, categoryTabStyle } = this.props;
+        const categoryTab = (
+          <TouchableWithoutFeedback>
+          <View style={[styles.footerContainer, categoryTabStyle
+    ]}>
+        {_
+          .drop(
+            category,
+            this.props.enableFrequentlyUsedEmoji
+              ? 0
+              : 1
+          )
+            .map(({ key }) => (
+              <TouchableOpacity
+          key={key}
+          onPress={() =>
+      this.handleCategoryPress(key)
+    }
+      style={styles.categoryIconContainer}
+        >
+        <View>
+        {categoryIcon[key]({
+            color:
+              key ===
+              this.state
+                .currentCategoryKey
+                ? this.props
+                  .categoryHighlightColor
+                : this.props
+                  .categoryUnhighlightedColor,
+            size: this.props
+              .categoryFontSize
+          })}
+        </View>
+        </TouchableOpacity>
+    ))}
+    </View>
+      </TouchableWithoutFeedback>
+    );
         return (
             <View
                 style={{
@@ -443,6 +483,7 @@ class EmojiInput extends React.PureComponent {
                     position: 'relative'
                 }}
             >
+                {isTabHeader && !this.state.searchQuery && this.props.showCategoryTab && categoryTab}
                 {enableSearch && (
                     <TextInput
                         ref={input => {
@@ -511,44 +552,7 @@ class EmojiInput extends React.PureComponent {
                     ref={component => (this._recyclerListView = component)}
                     onScroll={this.handleScroll}
                 />
-                {!this.state.searchQuery &&
-                    this.props.showCategoryTab && (
-                        <TouchableWithoutFeedback>
-                            <View style={styles.footerContainer}>
-                                {_
-                                    .drop(
-                                        category,
-                                        this.props.enableFrequentlyUsedEmoji
-                                            ? 0
-                                            : 1
-                                    )
-                                    .map(({ key }) => (
-                                        <TouchableOpacity
-                                            key={key}
-                                            onPress={() =>
-                                                this.handleCategoryPress(key)
-                                            }
-                                            style={styles.categoryIconContainer}
-                                        >
-                                            <View>
-                                                {categoryIcon[key]({
-                                                    color:
-                                                        key ===
-                                                        this.state
-                                                            .currentCategoryKey
-                                                            ? this.props
-                                                                  .categoryHighlightColor
-                                                            : this.props
-                                                                  .categoryUnhighlightedColor,
-                                                    size: this.props
-                                                        .categoryFontSize
-                                                })}
-                                            </View>
-                                        </TouchableOpacity>
-                                    ))}
-                            </View>
-                        </TouchableWithoutFeedback>
-                    )}
+                {!isTabHeader && !this.state.searchQuery && this.props.showCategoryTab && categoryTab}
                 {selectedEmoji && (
                     <Animatable.View
                         animation="bounceIn"
@@ -635,11 +639,13 @@ EmojiInput.defaultProps = {
     categoryLabelTextStyle: {
         fontSize: 25
     },
+    categoryTabStyle: {},
     emojiFontSize: 40,
     categoryFontSize: 20,
     resetSearch: false,
     filterFunctions: [],
-    renderAheadOffset: 1500
+    renderAheadOffset: 1500,
+    isTabHeader: false,
 };
 
 EmojiInput.propTypes = {
@@ -659,13 +665,15 @@ EmojiInput.propTypes = {
     categoryLabelHeight: PropTypes.number,
     enableSearch: PropTypes.bool,
     categoryLabelTextStyle: PropTypes.object,
+    categoryTabStyle: PropTypes.object,
 
     enableFrequentlyUsedEmoji: PropTypes.bool,
     numFrequentlyUsedEmoji: PropTypes.number,
     defaultFrequentlyUsedEmoji: PropTypes.arrayOf(PropTypes.string),
     resetSearch: PropTypes.bool,
     filterFunctions: PropTypes.arrayOf(PropTypes.func),
-    renderAheadOffset: PropTypes.number
+    renderAheadOffset: PropTypes.number,
+    isTabHeader: PropTypes.bool
 };
 
 const styles = {
