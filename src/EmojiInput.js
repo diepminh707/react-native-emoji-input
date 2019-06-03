@@ -435,11 +435,11 @@ class EmojiInput extends React.PureComponent {
 
     render() {
         const { selectedEmoji, offsetY } = this.state;
-        const { enableSearch, width, renderAheadOffset, isTabHeader, categoryTabStyle } = this.props;
+        const { enableSearch, width, renderAheadOffset, isTabHeader, categoryTabStyle, onLeftBarComponent, onRightBarComponent } = this.props;
         const categoryTab = (
-          <TouchableWithoutFeedback>
           <View style={[styles.footerContainer, categoryTabStyle
     ]}>
+        {!_.isNil(onLeftBarComponent) && onLeftBarComponent()}
         {_
           .drop(
             category,
@@ -471,8 +471,8 @@ class EmojiInput extends React.PureComponent {
         </View>
         </TouchableOpacity>
     ))}
+        {!_.isNil(onRightBarComponent) && onRightBarComponent()}
     </View>
-      </TouchableWithoutFeedback>
     );
         return (
             <View
@@ -673,7 +673,10 @@ EmojiInput.propTypes = {
     resetSearch: PropTypes.bool,
     filterFunctions: PropTypes.arrayOf(PropTypes.func),
     renderAheadOffset: PropTypes.number,
-    isTabHeader: PropTypes.bool
+    isTabHeader: PropTypes.bool,
+
+    onRightBarComponent: PropTypes.func,
+    onLeftBarComponent: PropTypes.func,
 };
 
 const styles = {
